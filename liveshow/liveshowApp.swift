@@ -12,20 +12,18 @@ struct liveshowApp: App {
     
     @UIApplicationDelegateAdaptor private var delegate: LiveAppDelegate
     
-    @StateObject var configCenter: LiveAppConfigCenter
-    let server: LiveAppServer
+    @State private var configCenter = LiveAppConfigCenter()
+    @State private var appServer = MockLiveAppServer()
     
     init() {
-        let configCenter = LiveAppConfigCenter()
-        _configCenter = StateObject(wrappedValue: configCenter)
-        server = LiveAppServer(configCenter: configCenter)
+        configCenter.initConfig(server: appServer)
     }
     
     var body: some Scene {
         WindowGroup {
-            LiveShowView()
-                .environmentObject(configCenter)
-                .environment(\.server, server)
+            LiveShowView(feedId: 1)
+                .environment(configCenter)
+                .environment(\.server, appServer)
         }
     }
 }

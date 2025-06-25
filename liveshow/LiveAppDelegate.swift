@@ -8,10 +8,9 @@
 import Foundation
 import UIKit
 
-
 class LiveAppDelegate : NSObject, UIApplicationDelegate, ObservableObject {
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        NSLog("applicationDidBecomeActive")
+        print("applicationDidBecomeActive")
     }
 }
