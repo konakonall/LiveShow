@@ -24,6 +24,7 @@ struct liveshowApp: App {
             LiveShowView(feedId: 1)
                 .environment(configCenter)
                 .environment(\.server, appServer)
+                .preferredColorScheme(.dark)
         }
     }
 }

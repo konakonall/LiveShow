@@ -14,26 +14,30 @@ struct NavigationView: View {
     var body: some View {
         HStack {
             Image(systemName: "chevron.backward")
-                .colorInvert()
                 .padding(8)
-                .background(Circle().fill(Color.black.opacity(0.3)))
-            Text("\(feed.watchingCount)")
-                .colorInvert()
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
+                .background(Circle().fill(Color.gray.opacity(0.5)))
+            Label("\(feed.watchingCount)", systemImage: "eye.fill")
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
                 .background(Color.red)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             Spacer()
             Label("Save Seller", systemImage: "heart")
-                .colorInvert()
                 .padding(.vertical, 8)
                 .padding(.horizontal, 16)
-                .background(Color.black.opacity(0.3))
+                .padding(.trailing, 28)
+                .background(Color.gray.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 20))
+                .overlay(alignment: Alignment.trailing) {
+                    Image(systemName: "person.fill")
+                        .padding(10)
+                        .background(Circle().fill(Color.blue.opacity(0.5)))
+                }
         }
     }
 }
 
 #Preview {
     NavigationView(feed: LiveFeed.mock())
+        .preferredColorScheme(.dark)
 }

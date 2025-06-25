@@ -59,10 +59,8 @@ extension LiveShowView {
     
     func feedContentView(feed: LiveFeed) -> some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text(feed.title)
+            NavigationView(feed: feed)
+            Spacer()
         }
         .padding()
     }
@@ -72,4 +70,5 @@ extension LiveShowView {
     LiveShowView(feedId: 1)
         .environment(LiveAppConfigCenter())
         .environment(\.server, MockLiveAppServer())
+        .preferredColorScheme(.dark)
 }

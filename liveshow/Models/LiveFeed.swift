@@ -9,12 +9,21 @@ import Foundation
 
 typealias FeedID = UInt64
 
-struct LiveFeed {
+@Observable class LiveFeed {
     let feedId: FeedID
     let title: String
-    let watchingCount: UInt32
     let playUrl: String
     let anchor: User
+    
+    var watchingCount: UInt32
+    
+    init(feedId: FeedID, title: String, watchingCount: UInt32, playUrl: String, anchor: User) {
+        self.feedId = feedId
+        self.title = title
+        self.watchingCount = watchingCount
+        self.playUrl = playUrl
+        self.anchor = anchor
+    }
     
     static func mock() -> LiveFeed {
         let anchor = User(userId: 1, userName: "Liam", userAvatar: nil)
