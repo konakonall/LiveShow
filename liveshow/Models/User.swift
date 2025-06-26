@@ -11,4 +11,10 @@ struct User {
     let userId: UInt64
     let userName: String
     let userAvatar: String?
+    
+    init(userId: UInt64, userName: String) {
+        self.userId = userId
+        self.userName = userName
+        self.userAvatar = nil
+    }
 }

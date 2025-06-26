@@ -26,7 +26,7 @@ typealias FeedID = UInt64
     }
     
     static func mock() -> LiveFeed {
-        let anchor = User(userId: 1, userName: "Liam", userAvatar: nil)
+        let anchor = User(userId: 1, userName: "Liam")
         return LiveFeed(feedId: 1, title: "Welcome to My Live", watchingCount: 100, playUrl: "", anchor: anchor)
     }
 }

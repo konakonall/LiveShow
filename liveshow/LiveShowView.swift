@@ -13,14 +13,21 @@ enum LoadingState {
     case FAILURE(Error)
 }
 
+extension View {
+    func preview() -> some View {
+        self
+            .environment(LiveServiceLocator())
+            .preferredColorScheme(.dark)
+    }
+}
+
 struct LiveShowView: View {
-    @Environment(LiveAppConfigCenter.self) private var configCenter: LiveAppConfigCenter
-    @Environment(\.server) private var server: LiveAppServerProtocol
+    @Environment(LiveServiceLocator.self) private var service: LiveServiceLocator
     
     let feedId: FeedID
     
     @State private var feed: LiveFeed?
-    @State private var loadingState: LoadingState = .LOADING
+    @State var loadingState: LoadingState = .LOADING
     
     var body: some View {
         Group {
@@ -42,7 +49,7 @@ extension LiveShowView {
             .progressViewStyle(CircularProgressViewStyle())
             .task {
                 do {
-                    let feed = try await server.fetchFeedInfo(feedId: feedId)
+                    let feed = try await service.server.fetchFeedInfo(feedId: feedId)
                     self.feed = feed
                     self.loadingState = .SUCCESS(feed)
                 } catch {
@@ -58,17 +65,24 @@ extension LiveShowView {
     }
     
     func feedContentView(feed: LiveFeed) -> some View {
-        VStack {
-            NavigationView(feed: feed)
-            Spacer()
+        ZStack {
+            PlayerView()
+            VStack {
+                NavigationView(feed: feed)
+                Spacer()
+                HStack {
+                    CommentsListView(feed: feed)
+                    Spacer()
+                }
+                CommentsView(feed: feed)
+            }
+            .padding(.horizontal, 8)
+            .safeAreaPadding(.bottom)
         }
-        .padding()
     }
 }
 
 #Preview {
-    LiveShowView(feedId: 1)
-        .environment(LiveAppConfigCenter())
-        .environment(\.server, MockLiveAppServer())
-        .preferredColorScheme(.dark)
+    LiveShowView(feedId: 1, loadingState: .SUCCESS(LiveFeed.mock()))
+        .preview()
 }

@@ -12,18 +12,16 @@ struct liveshowApp: App {
     
     @UIApplicationDelegateAdaptor private var delegate: LiveAppDelegate
     
-    @State private var configCenter = LiveAppConfigCenter()
-    @State private var appServer = MockLiveAppServer()
+    @State private var serviceLocator = LiveServiceLocator()
     
     init() {
-        configCenter.initConfig(server: appServer)
+        serviceLocator.configCenter.initConfig(server: serviceLocator.server)
     }
     
     var body: some Scene {
         WindowGroup {
             LiveShowView(feedId: 1)
-                .environment(configCenter)
-                .environment(\.server, appServer)
+                .environment(serviceLocator)
                 .preferredColorScheme(.dark)
         }
     }
