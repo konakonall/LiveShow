@@ -27,7 +27,6 @@ struct CommentsView: View {
             .padding(.trailing, 16)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(.white)
             )
             .overlay(alignment: Alignment.trailing) {
                 Image(systemName: "heart.fill")
@@ -40,7 +39,7 @@ struct CommentsView: View {
             Image(systemName: "menucard")
                 .colorInvert()
                 .padding(8)
-                .background(Circle().fill(Color.white))
+                .background(Circle())
         }
     }
 }

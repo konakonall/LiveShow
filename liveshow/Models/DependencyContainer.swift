@@ -180,6 +180,10 @@ class MockLiveAppConfigCenter: LiveAppConfigCenter {
 }
 
 class PreviewLiveAppServer: LiveAppServerProtocol {
+    func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo {
+        return LiveShopInfo.mock(feedId: feedId)
+    }
+    
     func fetchConfig() async throws -> AppGlobalConfig {
         throw CancellationError()
     }

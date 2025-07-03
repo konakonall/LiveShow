@@ -16,6 +16,7 @@ typealias FeedID = UInt64
     let anchor: User
     
     var watchingCount: UInt32
+    var shopInfo: LiveShopInfo?
     
     init(feedId: FeedID, title: String, watchingCount: UInt32, playUrl: String, anchor: User) {
         self.feedId = feedId

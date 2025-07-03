@@ -8,6 +8,7 @@
 import SwiftUI
 
 enum LoadingState {
+    case INIT
     case LOADING
     case SUCCESS(LiveFeed)
     case FAILURE(Error)
@@ -29,11 +30,13 @@ struct LiveShowView: View {
     let feedId: FeedID
     
     @State private var feed: LiveFeed?
-    @State var loadingState: LoadingState = .LOADING
+    @State var loadingState: LoadingState = .INIT
     
     var body: some View {
         Group {
             switch loadingState {
+            case .INIT:
+                loadingView(request: true)
             case .LOADING:
                 loadingView()
             case let .SUCCESS(feed):
@@ -46,18 +49,12 @@ struct LiveShowView: View {
 }
 
 extension LiveShowView {
-    func loadingView() -> some View {
+    func loadingView(request: Bool = false) -> some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle())
             .task {
-                do {
-                    // 使用 DependencyContainer 获取服务
-                    let server = container.resolve(LiveAppServerProtocol.self)
-                    let feed = try await server.fetchFeedInfo(feedId: feedId)
-                    self.feed = feed
-                    self.loadingState = .SUCCESS(feed)
-                } catch {
-                    self.loadingState = .FAILURE(error)
+                if (request) {
+                    await fetchFeedAndShopInfo(feedId: feedId)
                 }
             }
     }
@@ -95,21 +92,53 @@ extension LiveShowView {
             PlayerView()
             
             VStack {
-                // 使用 DependencyContainer 创建的 NavigationView
                 NavigationView(feed: feed)
                 
                 Spacer()
                 
                 HStack {
-                    // 使用 DependencyContainer 创建的 CommentsListView
+                    Bidding()
+                    Spacer()
+                }
+                
+                HStack {
                     CommentsListView(feed: feed)
                     Spacer()
                 }
                 // 评论输入框
                 CommentsView(feed: feed)
+                
+                if let shopInfo = feed.shopInfo {
+                    ShopCard(shopInfo: shopInfo)
+                        .padding(.top, 10)
+                }
             }
             .padding(.horizontal, 8)
             .safeAreaPadding(.bottom)
+        }
+    }
+}
+
+extension LiveShowView {
+    func fetchFeedAndShopInfo(feedId: FeedID) async {
+        do {
+            // 使用 DependencyContainer 获取服务
+            let server = container.resolve(LiveAppServerProtocol.self)
+            async let feedInfoFetch = server.fetchFeedInfo(feedId: feedId)
+            async let shopInfoFetch = server.fetchShopInfo(feedId: feedId)
+            
+            do {
+                let feed = try await feedInfoFetch
+                let shopInfo = try? await shopInfoFetch
+                
+                feed.shopInfo = shopInfo
+                self.feed = feed
+                self.loadingState = .SUCCESS(feed)
+            } catch {
+                self.loadingState = .FAILURE(error)
+            }
+        } catch {
+            self.loadingState = .FAILURE(error)
         }
     }
 }
@@ -127,7 +156,7 @@ extension LiveShowView {
 // MARK: - Preview 支持
 
 #Preview("Live Show View") {
-    LiveShowView(feedId: 1, loadingState: .SUCCESS(LiveFeed.mock()))
+    LiveShowView(feedId: 1)
         .preview()
 }
 

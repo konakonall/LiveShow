@@ -17,8 +17,11 @@ protocol LiveAppServerProtocol {
     func toggleBookmarkState(feedId: FeedID) async throws -> Bool
     
     func getComments(feedId: FeedID) async throws -> Array<LiveComment>
+    @discardableResult
     func comment(feedId: FeedID, content: String) async throws -> LiveComment
     func listenForCommentsUpdate(commentsId: UInt64, feedId: FeedID) -> AsyncThrowingStream<Array<LiveComment>, Error>
+    
+    func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo
 }
 
 // MARK: - Mock Server
@@ -127,5 +130,14 @@ extension MockLiveAppServer {
                 task.cancel()
             }
         }
+    }
+}
+
+//MARK: - Shop
+
+extension MockLiveAppServer {
+    func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo {
+        try await sleep()
+        return LiveShopInfo.mock(feedId: feedId)
     }
 }
