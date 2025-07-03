@@ -11,57 +11,22 @@ protocol LiveAppServerProtocol {
     func fetchConfig() async throws -> AppGlobalConfig
     
     func fetchFeedInfo(feedId: FeedID) async throws -> LiveFeed
-    
-    func listenForWatchingCountUpdate(feed: LiveFeed) -> AsyncStream<UInt32>
+    func listenForWatchingCountUpdate(feed: LiveFeed) -> AsyncThrowingStream<UInt32, Error>
     
     func isBookmarked(feedId: FeedID) async throws -> Bool
     func toggleBookmarkState(feedId: FeedID) async throws -> Bool
     
     func getComments(feedId: FeedID) async throws -> Array<LiveComment>
+    func comment(feedId: FeedID, content: String) async throws -> LiveComment
     func listenForCommentsUpdate(commentsId: UInt64, feedId: FeedID) -> AsyncThrowingStream<Array<LiveComment>, Error>
 }
 
-extension LiveAppServerProtocol {
-    func fetchConfig() async throws -> AppGlobalConfig {
-        throw CancellationError()
-    }
-    
-    func fetchFeedInfo(feedId: FeedID) async throws -> LiveFeed {
-        throw CancellationError()
-    }
-    
-    func listenForWatchingCountUpdate(feed: LiveFeed) -> AsyncStream<UInt32> {
-        return AsyncStream { _ in
-            
-        }
-    }
-    
-    func isBookmarked(feedId: FeedID) async throws -> Bool {
-        throw CancellationError()
-    }
-    
-    func toggleBookmarkState(feedId: FeedID) async throws -> Bool {
-        throw CancellationError()
-    }
-    
-    func getComments(feedId: FeedID) async throws -> Array<LiveComment> {
-        throw CancellationError()
-    }
-    func listenForCommentsUpdate(commentsId: UInt64, feedId: FeedID) -> AsyncThrowingStream<Array<LiveComment>, Error> {
-        return AsyncThrowingStream { _ in
-            
-        }
-    }
-}
+// MARK: - Mock Server
 
-struct MockLiveAppServer: LiveAppServerProtocol {
+class MockLiveAppServer: LiveAppServerProtocol {
     private static let NETWORK_SLEEP_SECS = 0.5
-    
-    private var bookmarkStore: BookmarkStore
-    
-    init(bookmarkMgr: BookmarkStore) {
-        self.bookmarkStore = bookmarkMgr
-    }
+    private var bookmarkedFeed: Set<UInt64> = []
+    private var myComments: Array<LiveComment> = []
     
     func fetchConfig() async throws -> AppGlobalConfig {
         return await withCheckedContinuation { continuation in
@@ -76,9 +41,9 @@ struct MockLiveAppServer: LiveAppServerProtocol {
         return LiveFeed.mock()
     }
     
-    func listenForWatchingCountUpdate(feed: LiveFeed) -> AsyncStream<UInt32> {
+    func listenForWatchingCountUpdate(feed: LiveFeed) -> AsyncThrowingStream<UInt32, Error> {
         var start = feed.watchingCount
-        return AsyncStream { continuation in
+        return AsyncThrowingStream { continuation in
             let task = Task {
                 while true {
                     do {
@@ -97,26 +62,45 @@ struct MockLiveAppServer: LiveAppServerProtocol {
         }
     }
     
+    private func sleep(_ secs: Double = NETWORK_SLEEP_SECS) async throws {
+        try await Task.sleep(nanoseconds: UInt64(1_000_000_000 * secs))
+    }
+}
+
+// MARK: - Bookmark
+extension MockLiveAppServer {
+    
     func isBookmarked(feedId: FeedID) async throws -> Bool {
         try await sleep()
-        return bookmarkStore.isBookmarked(feedId: feedId)
+        return bookmarkedFeed.contains(feedId)
     }
     
     func toggleBookmarkState(feedId: FeedID) async throws -> Bool {
         try await sleep()
         
-        if (bookmarkStore.isBookmarked(feedId: feedId)) {
-            bookmarkStore.unBookmark(feedId: feedId)
+        if (bookmarkedFeed.contains(feedId)) {
+            bookmarkedFeed.insert(feedId)
             return false
         } else {
-            bookmarkStore.bookmark(feedId: feedId)
+            bookmarkedFeed.remove(feedId)
             return true
         }
     }
+}
+
+// MARK: - Comment
+extension MockLiveAppServer {
     
     func getComments(feedId: FeedID) async throws -> Array<LiveComment> {
         try await sleep()
         return LiveComment.mockList(len: 20)
+    }
+    
+    func comment(feedId: FeedID, content: String) async throws -> LiveComment {
+        try await sleep()
+        let newComment = LiveComment.mockComment(content: content)
+        myComments.append(newComment)
+        return newComment
     }
     
     func listenForCommentsUpdate(commentsId: UInt64, feedId: FeedID) -> AsyncThrowingStream<Array<LiveComment>, any Error> {
@@ -126,7 +110,12 @@ struct MockLiveAppServer: LiveAppServerProtocol {
                 while true {
                     do {
                         try await self.sleep(1)
-                        continuation.yield([LiveComment.mock(idx: nextCommentIdx)])
+                        var newComments = [LiveComment.mock(idx: nextCommentIdx)]
+                        if !myComments.isEmpty {
+                            newComments += myComments
+                            myComments.removeAll()
+                        }
+                        continuation.yield(newComments)
                         nextCommentIdx += 1
                     } catch {
                         continuation.finish()
@@ -139,11 +128,4 @@ struct MockLiveAppServer: LiveAppServerProtocol {
             }
         }
     }
-    
-    private func sleep(_ secs: Double = NETWORK_SLEEP_SECS) async throws {
-        try await Task.sleep(nanoseconds: UInt64(1_000_000_000 * secs))
-    }
-}
-
-struct RealLiveAppServer: LiveAppServerProtocol {
 }

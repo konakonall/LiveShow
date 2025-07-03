@@ -12,39 +12,39 @@ import Foundation
     
     var isBookmarked: Bool = false
     
-    override func inject(service: LiveServiceLocator) {
-        super.inject(service: service)
-        startMonitorWatchCountUpdate(server: service.server)
-        updateBookmark(server: service.server)
+    override func setupIfNeeded() {
+        super.setupIfNeeded()
+        startMonitorWatchCountUpdate(server: server)
+        updateBookmark(server: server)
     }
     
     // MARK: - WatchCount
     
     private func startMonitorWatchCountUpdate(server: LiveAppServerProtocol) {
-        Task { [weak self] in
-            guard let self else { return }
-            for await watchingCount in server.listenForWatchingCountUpdate(feed: feed) {
+        taskManager.run { [weak self] in
+            guard let self = self else { return }
+            for try await watchingCount in server.listenForWatchingCountUpdate(feed: feed) {
                 feed.watchingCount = watchingCount
             }
-        }.store(col: &tasks)
+        }
     }
     
     // MARK: - Bookmark
     
     private func updateBookmark(server: LiveAppServerProtocol) {
-        Task { [weak self] in
+        taskManager.run { [weak self] in
             guard let self else { return }
             let isBookmarked = try await server.isBookmarked(feedId: feed.feedId)
             self.isBookmarked = isBookmarked
-        }.store(col: &tasks)
+        }
     }
     
     func toggleBookmark() {
-        Task { [weak self] in
+        self.isBookmarked = !self.isBookmarked
+        taskManager.run { [weak self] in
             guard let self else { return }
-            if let isBookmarked = try await service?.server.toggleBookmarkState(feedId: feed.feedId) {
-                self.isBookmarked = isBookmarked
-            }
-        }.store(col: &tasks)
+            let isBookmarked = try await server.toggleBookmarkState(feedId: feed.feedId)
+            self.isBookmarked = isBookmarked
+        }
     }
 }

@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct CommentsView: View {
-    @Environment(LiveServiceLocator.self) private var service:
-        LiveServiceLocator
-
     @State private var input: String = ""
+    @State private var viewModel: CommentsViewModel
 
     init(feed: LiveFeed) {
+        self.viewModel = CommentsViewModel(feed: feed)
     }
 
     var body: some View {
@@ -34,6 +33,9 @@ struct CommentsView: View {
                 Image(systemName: "heart.fill")
                     .foregroundStyle(.red)
                     .padding(.horizontal, 8)
+            }
+            .onSubmit {
+                viewModel.addComment(content: input)
             }
             Image(systemName: "menucard")
                 .colorInvert()

@@ -15,22 +15,24 @@ import Foundation
     // MARK: - Load Comments List
     
     func loadComments() {
-        guard let server = service?.server else { return }
-        
-        Task {
-            let comments = try await server.getComments(feedId: feed.feedId)
+        taskManager.run { [weak self] in
+            guard let self = self else { return }
+            let comments = try await self.server.getComments(feedId: feed.feedId)
             commentsList += comments
             
             for try await newComments in server.listenForCommentsUpdate(commentsId: comments.last?.id ?? 0, feedId: feed.feedId) {
                 commentsList += newComments
             }
-        }.store(col: &tasks)
+        }
     }
     
     
     // MARK: - Add comments
     
-    func addComment() {
-        
+    func addComment(content: String) {
+        taskManager.run { [weak self] in
+            guard let self = self else { return }
+            let comment = try await self.server.comment(feedId: feed.feedId, content: content)
+        }
     }
 }

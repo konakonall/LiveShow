@@ -30,4 +30,9 @@ struct LiveComment: Identifiable, Hashable {
     static func mock(idx: UInt64) -> LiveComment {
         return LiveComment(id: idx, author:User(userId: idx, userName: "00\(idx)"), content: "Hello from 00\(idx)")
     }
+    
+    static func mockComment(content: String) -> LiveComment {
+        let randomId = UInt64.random(in: 1...UInt64.max)
+        return LiveComment(id: randomId, author:User(userId: randomId, userName: "00\(randomId)"), content: content)
+    }
 }

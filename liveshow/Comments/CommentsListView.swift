@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CommentsListView: View {
-    @Environment(LiveServiceLocator.self) private var service: LiveServiceLocator
     @State private var viewModel: CommentsViewModel
     
     init(feed: LiveFeed) {
@@ -54,11 +53,7 @@ struct CommentsListView: View {
         //FIXME: Not good
         .frame(maxWidth: 300, maxHeight: 300)
         .onAppear {
-            viewModel.inject(service: service)
             viewModel.loadComments()
-        }
-        .onDisappear {
-            viewModel.destroy()
         }
     }
 }

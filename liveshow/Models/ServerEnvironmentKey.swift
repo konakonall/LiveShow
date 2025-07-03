@@ -9,7 +9,7 @@ import Foundation
 import SwiftUICore
 
 struct LiveAppServerKey: EnvironmentKey {
-    static var defaultValue: LiveAppServerProtocol = RealLiveAppServer()
+    static var defaultValue: LiveAppServerProtocol = MockLiveAppServer()
 }
 
 extension EnvironmentValues {

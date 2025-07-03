@@ -9,7 +9,6 @@ import SwiftUI
 
 struct NavigationView: View {
     
-    @Environment(LiveServiceLocator.self) private var service: LiveServiceLocator
     @State private var viewModel: NavigationViewModel
     
     init(feed: LiveFeed) {
@@ -55,10 +54,6 @@ struct NavigationView: View {
                     .padding(10)
                     .background(Circle().fill(Color.gray.opacity(0.5)))
             }
-        }.onAppear {
-            self.viewModel.inject(service: service)
-        }.onDisappear {
-            self.viewModel.destroy()
         }
     }
 }
