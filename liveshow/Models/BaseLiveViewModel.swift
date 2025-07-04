@@ -23,7 +23,7 @@ class BaseLiveViewModel {
     lazy var configCenter: LiveAppConfigCenter = container.resolve(LiveAppConfigCenter.self)
     
     // 标记为 required 以支持子类的静态工厂方法
-    required init(feed: LiveFeed, container: DependencyContainer = DependencyContainer.shared) {
+    init(feed: LiveFeed, container: DependencyContainer = DependencyContainer.shared) {
         self.feed = feed
         self.container = container
         
@@ -53,15 +53,15 @@ extension BaseLiveViewModel {
     }
     
     // 便利方法：使用 Mock 依赖创建实例
-    static func createForTesting(feed: LiveFeed) -> Self {
-        let testContainer = DependencyContainer.createForTesting()
-        return Self.init(feed: feed, container: testContainer)
-    }
-    // 便利方法：使用 Preview 依赖创建实例
-    static func createForPreview(feed: LiveFeed) -> Self {
-        let previewContainer = DependencyContainer.createForPreview()
-        return Self.init(feed: feed, container: previewContainer)
-    }
+//    static func createForTesting(feed: LiveFeed) -> Self {
+//        let testContainer = DependencyContainer.createForTesting()
+//        return Self.init(feed: feed, container: testContainer)
+//    }
+//    // 便利方法：使用 Preview 依赖创建实例
+//    static func createForPreview(feed: LiveFeed) -> Self {
+//        let previewContainer = DependencyContainer.createForPreview()
+//        return Self.init(feed: feed, container: previewContainer)
+//    }
 }
 #endif
 

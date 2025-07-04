@@ -22,6 +22,10 @@ protocol LiveAppServerProtocol {
     func listenForCommentsUpdate(commentsId: UInt64, feedId: FeedID) -> AsyncThrowingStream<Array<LiveComment>, Error>
     
     func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo
+    
+    @discardableResult
+    func bidPrice(itemId: UInt64, price: Double) async throws -> Bool
+    func fetchBidPriceUpdate(itemId: UInt64) -> AsyncThrowingStream<(UInt64, Double), Error>
 }
 
 // MARK: - Mock Server
@@ -30,6 +34,7 @@ class MockLiveAppServer: LiveAppServerProtocol {
     private static let NETWORK_SLEEP_SECS = 0.5
     private var bookmarkedFeed: Set<UInt64> = []
     private var myComments: Array<LiveComment> = []
+    private var myBidPrice: Double = -1
     
     func fetchConfig() async throws -> AppGlobalConfig {
         return await withCheckedContinuation { continuation in
@@ -139,5 +144,39 @@ extension MockLiveAppServer {
     func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo {
         try await sleep()
         return LiveShopInfo.mock(feedId: feedId)
+    }
+    
+    func bidPrice(itemId: UInt64, price: Double) async throws -> Bool {
+        try await sleep()
+        myBidPrice = price
+        return true
+    }
+    
+    func fetchBidPriceUpdate(itemId: UInt64) -> AsyncThrowingStream<(UInt64, Double), any Error> {
+        return AsyncThrowingStream { continuation in
+            var nextPrice = 0.0
+            let bidTimeOut = 10.0 // seconds
+            let start = Date.now
+            let task = Task {
+                while Date.now.timeIntervalSince(start) < bidTimeOut {
+                    if myBidPrice > nextPrice {
+                        continuation.yield((UserManager.shared.me.userId, myBidPrice))
+                        nextPrice += 1
+                        myBidPrice = 0
+                    } else {
+                        nextPrice += 1
+                        continuation.yield((UInt64.random(in: 10000...UInt64.max), nextPrice))
+                    }
+                    
+                    try await self.sleep(Double.random(in: 1.0...3.0))
+                }
+                
+                continuation.finish()
+            }
+            
+            continuation.onTermination = {@Sendable _ in
+                task.cancel()
+            }
+        }
     }
 }

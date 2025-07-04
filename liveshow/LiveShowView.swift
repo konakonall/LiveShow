@@ -88,7 +88,9 @@ extension LiveShowView {
     }
     
     func feedContentView(feed: LiveFeed) -> some View {
-        ZStack {
+        let biddingViewModel = BiddingViewModel(feed: feed, shopInfo: feed.shopInfo)
+        
+        return ZStack {
             PlayerView()
             
             VStack {
@@ -97,7 +99,7 @@ extension LiveShowView {
                 Spacer()
                 
                 HStack {
-                    Bidding()
+                    BiddingView()
                     Spacer()
                 }
                 
@@ -115,6 +117,7 @@ extension LiveShowView {
             }
             .padding(.horizontal, 8)
             .safeAreaPadding(.bottom)
+            .environment(biddingViewModel)
         }
     }
 }

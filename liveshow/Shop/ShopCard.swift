@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ShopCard: View {
+    
+    @Environment(BiddingViewModel.self) var viewModel: BiddingViewModel
+    
     private let shopInfo: LiveShopInfo
     
     init(shopInfo: LiveShopInfo) {
@@ -31,7 +34,8 @@ struct ShopCard: View {
                     .font(.footnote)
                 Spacer()
                 Button("Buy It Now") {
-                    
+                    viewModel.startBid()
+                    viewModel.joinBid()
                 }
                 .foregroundStyle(.white)
                 .font(.subheadline.bold())

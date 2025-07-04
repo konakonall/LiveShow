@@ -180,6 +180,16 @@ class MockLiveAppConfigCenter: LiveAppConfigCenter {
 }
 
 class PreviewLiveAppServer: LiveAppServerProtocol {
+    func bidPrice(itemId: UInt64, price: Double) async throws -> Bool {
+        throw CancellationError()
+    }
+    
+    func fetchBidPriceUpdate(itemId: UInt64) -> AsyncThrowingStream<(UInt64, Double), any Error> {
+        return AsyncThrowingStream {_ in
+            
+        }
+    }
+    
     func fetchShopInfo(feedId: FeedID) async throws -> LiveShopInfo {
         return LiveShopInfo.mock(feedId: feedId)
     }
