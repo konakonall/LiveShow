@@ -12,6 +12,10 @@ import Foundation
     
     var commentsList: Array<LiveComment> = []
     
+    override func setupIfNeeded() {
+        loadComments()
+    }
+    
     // MARK: - Load Comments List
     
     func loadComments() {

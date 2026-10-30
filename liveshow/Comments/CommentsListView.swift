@@ -14,7 +14,12 @@ struct CommentsListView: View {
         self.viewModel = CommentsViewModel(feed: feed)
     }
     
+    init(viewModel: CommentsViewModel) {
+        self.viewModel = viewModel
+    }
+    
     var body: some View {
+        let _ = Self._printChanges()
         ZStack(alignment: .top) {
             ScrollViewReader { proxy in
                 ScrollView {

@@ -9,13 +9,17 @@ import SwiftUI
 
 struct NavigationView: View {
     
-    @State private var viewModel: NavigationViewModel
+    @State private var viewModel: NavigationViewModel = NavigationViewModel(feed: LiveFeed.mock())
     
     init(feed: LiveFeed) {
-        self.viewModel = NavigationViewModel(feed: feed)
+    }
+    
+    init(viewModel: NavigationViewModel) {
+        self.viewModel = viewModel
     }
     
     var body: some View {
+        let _ = Self._printChanges()
         VStack {
             HStack {
                 Image(systemName: "chevron.backward")
